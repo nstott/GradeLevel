@@ -1,24 +1,6 @@
-module NLP.Syllables where
+module NLP.Syllables (countSyllables) where
 
 --Counting Syllables
-
---To find the number of syllables in a word, use the following steps:
-
---Count the vowels in the word.
---Subtract any silent vowels, (like the silent e at the end of a word, or the second vowel when two vowels are together in a syllabl.e)
---Subtract one vowel from every diphthong (diphthongs only count as one vowel sound.)
---The number of vowels sounds left is the same as the number of syllables.
-
--- or..
--- check first letter (group),
---   if its a dipthone, add 1, jump to end of dipthong, repeat
---   if its a silent vowel, skip it, repeat
---   if it's a vowel then add 1
-
-
-    main :: IO ()
-    main =
-        putStrLn "Hello"
 
     --
     -- a string zipper, we're processing a string letter by letter, keep track
@@ -26,37 +8,27 @@ module NLP.Syllables where
     --
     data StringZipper = StringZipper{prev :: String, next :: String} deriving (Show)
 
-    newStringZipper :: String -> StringZipper
-    newStringZipper s = StringZipper{prev = "", next = s}
-
     walkAhead :: Int -> StringZipper -> StringZipper
     walkAhead _ zipper@StringZipper{next = ""} = zipper
     walkAhead num StringZipper{prev = p, next = n} = StringZipper{prev = p ++ take num n, next = drop num n}
-
-    walkBack :: Int -> StringZipper -> StringZipper
-    walkBack _ zipper@(StringZipper{ prev = "" }) = zipper
-    walkBack num StringZipper{prev = p, next = n} = StringZipper{prev = reverse (drop num (reverse p)), next = reverse (take num (reverse p)) ++ n}
 
     atEnd :: StringZipper -> Bool
     atEnd StringZipper{next = ""} = True
     atEnd _ = False
 
+    countSyllables :: String -> Int
+    countSyllables s = countZipperVowels (0, StringZipper{prev = "", next = s})
 
-    type CountZipper = (Int, StringZipper)
-
-    countVowels :: CountZipper -> Int
-    countVowels (count, zipper)
+    countZipperVowels :: (Int, StringZipper) -> Int
+    countZipperVowels (count, zipper)
         | atEnd zipper = count
-        | otherwise = countVowels $ foldr testfn (count, zipper) [zipperIsDipthong, zipperIsVowel]
-          where
-            testfn = countZipperTest
-
-
-    countZipperTest :: (StringZipper -> (Bool, StringZipper)) -> CountZipper -> CountZipper
-    countZipperTest test (num, zipper) =
-        case test zipper of
-            (True, newzip) -> (num + 1, newzip)
-            (False, newzip) -> (num, newzip)
+        | otherwise = case zipperIsDipthong zipper of
+            (True, newZip) -> countZipperVowels (count + 1, newZip)
+            (False, _) -> case zipperIsDouble zipper of
+                (True, newZip) -> countZipperVowels (count + 1, newZip)
+                (False, _) -> case zipperIsVowel zipper of
+                    (True, newZip) -> countZipperVowels (count + 1, newZip)
+                    (False, _) -> countZipperVowels (count, walkAhead 1 zipper)
 
 
     -- definitions for english letter forms
@@ -67,9 +39,6 @@ module NLP.Syllables where
     isDipthong (x:y:_) = [x,y] `elem` dipthongs
     isDipthong _ = False
 
-    consonantDigraphs :: [String]
-    consonantDigraphs = ["th", "sh", "ph", "th", "ch", "wh"]
-
     vowels :: String
     vowels = "aeiouy"
 
@@ -77,8 +46,10 @@ module NLP.Syllables where
     isVowel [] = False
     isVowel (x:_) = x `elem` vowels
 
-    isConsonant :: String -> Bool
-    isConsonant = not . isVowel
+
+    isDouble :: String -> Bool
+    isDouble (x:y:_) = x `elem` vowels && x == y
+    isDouble _ = False
 
     zipperTestHead :: (String -> Bool) -> Int -> StringZipper -> (Bool, StringZipper)
     zipperTestHead test skip z@StringZipper{next = n}
@@ -91,33 +62,5 @@ module NLP.Syllables where
     zipperIsVowel :: StringZipper -> (Bool, StringZipper)
     zipperIsVowel = zipperTestHead isVowel 1
 
-
-
-
-
-    --indexOfDoubleCon :: String -> Maybe Int
-    --indexOfDoubleCon word@(x:xs) = Just 1
-        --where
-        --    pair :: String -> String
-        --    pair w
-        --        | length w > 1 = take 2 w
-        --        | length w == 1 = w ++ " "
-        --        | otherwise = "  "
-
-
-    -- are the first two characters doubles
-    --doubled :: String -> Bool
-    --doubled word
-    --    | length word > 1 = head word == (word !! 1)
-    --    | otherwise = False
-
-    --splitOnDoubledCon :: String -> [String]
-    --splitOnDoubledCon [] = []
-    --splitOnDoubledCon word = reverse $ doit word [] []
-    --  where
-    --    doit :: String -> String -> [String] -> [String]
-    --    doit "" pref acc = reverse pref:acc
-    --    doit w@(x:xs) pref acc
-    --        | isConsonant x && doubled w = doit xs "" (reverse (x:pref):acc)
-    --        | otherwise = doit xs (x:pref) acc
-
+    zipperIsDouble :: StringZipper -> (Bool, StringZipper)
+    zipperIsDouble = zipperTestHead isDouble 2
