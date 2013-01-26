@@ -1,5 +1,8 @@
 module NLP.Syllables (countSyllables) where
 
+
+    import Data.Char (toLower)
+    
 --Counting Syllables
 
     --
@@ -17,7 +20,7 @@ module NLP.Syllables (countSyllables) where
     atEnd _ = False
 
     countSyllables :: String -> Int
-    countSyllables s = countZipperVowels (0, StringZipper{prev = "", next = s})
+    countSyllables s = countZipperVowels (0, StringZipper{prev = "", next = map toLower s})
 
     countZipperVowels :: (Int, StringZipper) -> Int
     countZipperVowels (count, zipper)
