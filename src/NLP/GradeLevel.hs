@@ -4,8 +4,6 @@ module NLP.ReadingLevel where
 	import Data.List.Split (splitOneOf)
 	import Data.Char (isAlphaNum)
 
-
-
 	-- http://en.wikipedia.org/wiki/Coleman-Liau_Index
 	-- http://en.wikipedia.org/wiki/Flesch%E2%80%93Kincaid_readability_test
 
