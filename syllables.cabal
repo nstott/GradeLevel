@@ -17,4 +17,4 @@ cabal-version:       >=1.8
 library
   Hs-Source-Dirs:    src
   exposed-modules: NLP.Syllables
-  build-depends:       base ==4.5.*, text
+  build-depends:       base ==4.5.*, split

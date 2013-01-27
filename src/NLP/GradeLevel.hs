@@ -1,7 +1,7 @@
 module NLP.ReadingLevel where 
 
 	import NLP.Syllables
-	import qualified Data.Text as T
+	import Data.List.Split (splitOneOf)
 	import Data.Char (isAlphaNum)
 
 
@@ -23,14 +23,6 @@ module NLP.ReadingLevel where
 	  	sent = totalSentences s
 	  	syl = sum $ map countSyllables $ words s 
 
-	totalSentences :: String -> Int
-	totalSentences s = length $ filter (\x -> len x > 2) options
-	   where 
-	     text = T.pack s
-	     options = map T.unpack $ T.split (\x -> x == '.' || x == '?' || x == '!') text
-	     len s = length $ filter isAlphaNum s
-
-
 	colemanLiauIndex :: String -> Float
 	colemanLiauIndex str = (0.0588 * l) - (0.296 * s) - 15.8
 	  where
@@ -39,5 +31,11 @@ module NLP.ReadingLevel where
 
 	totalWords :: String -> Int
 	totalWords = length . words 
+
+	totalSentences :: String -> Int
+	totalSentences s = length options
+	   where 
+	     options = filter (\x -> len x > 2) $ splitOneOf ".!?" s
+	     len s = length $ filter isAlphaNum s
 
 
