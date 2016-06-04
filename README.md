@@ -3,12 +3,15 @@ Measure the grade level of text through the Coleman-Liau index, and the Flesch-K
 see 	
 
 http://en.wikipedia.org/wiki/Coleman-Liau_Index
+
 http://en.wikipedia.org/wiki/Flesch%E2%80%93Kincaid_readability_test
 
 functions are exported from NLP.ReadingLevel, 
 
 fleschReadingEase :: String -> Float
+
 fleschKincaidGradeLevel :: String -> Float
+
 colemanLiauIndex :: String -> Float
 
 there are also convenience functions totalWords, totalSentences there.
